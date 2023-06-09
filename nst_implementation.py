@@ -6,6 +6,7 @@ from torchvision import transforms
 import time
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 STYLE_TRANSFORM_PATH = "fst/transforms/galatea_1.pth"
 PRESERVE_COLOR = False
@@ -39,5 +40,6 @@ def stylize(content_img_bytes):
             generated_image = utils.transfer_color(content_image, generated_image)
         print("Transfer Time: {}".format(time.time() - starttime))
         # utils.show(generated_image)
+        cv2.imwrite('lukaTest.jpg', generated_image)
         utils.saveimg(generated_image, "helloworld.jpg")
-        return generated_image
+        return np.copy(generated_image)

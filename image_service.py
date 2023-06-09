@@ -6,11 +6,6 @@ from app import app
 import cv2
 from io import BytesIO
 from nst_implementation import stylize
-import torchvision.transforms.functional as TF
-from fst import utils
-
-
-DETECTION_PATH = "./static/results/" # ???
 
 # TODO points:
 # replace model with a custom one
@@ -23,26 +18,25 @@ DETECTION_PATH = "./static/results/" # ???
 # distinct methods for debugging and usage
 # think of enum for style_images
 # reformat code and comment lines 
-# exec time: 40.44 s 
-# find a way to save unique filename not to have it overwritten (if processed images are not going to be just temp)
+# exec time: ~1.3 s 
+
+
+
+# !done find a way to save unique filename not to have it overwritten (if processed images are not going to be just temp) uuid? 
+
+PROCESSED_IMAGES_PATH = "processed_images/" 
 
 def process_image(image):
+    # add UUID support 
     img_bytes = image.read()
     res = predict_object(img_bytes) # yolo obj detection. return type ultralytics.yolo.engine.results.Results
     res_img = create_mask(img_bytes, res) # apply nst and replace pixels of detected object with styled image
 
-    # Create the 'processed_images' directory if it doesn't exist
-    processed_images_dir = os.path.join(app.static_folder, "processed_images")
-    os.makedirs(processed_images_dir, exist_ok=True)
-
-    
     processed_image_filename = "processed_" + image.filename
-    processed_image_path = os.path.join("processed_images", processed_image_filename).replace("\\", "/")
-    processed_image_fullpath = os.path.join(app.static_folder, processed_image_path)
+    img_path = PROCESSED_IMAGES_PATH + processed_image_filename
 
-    # res_img.save(processed_image_fullpath)
-    cv2.imwrite(processed_image_fullpath, res_img)
-    return processed_image_path
+    cv2.imwrite(os.path.join(app.static_folder, img_path), res_img)
+    return img_path
 
 
 def predict_object(img_bytes):
@@ -52,22 +46,47 @@ def predict_object(img_bytes):
     img.close()
     return res
 
+
 def create_mask(image_bytes, res):
-    original_array = np.array(BytesIO(image_bytes)) # transform image to a numpy array 
-    styled_img = stylize(original_array)
-
-    # styled_array_resized = styled_img.resize(original_array.size, Image.BICUBIC)
-    styled_array_resized_uint8 = np.array(styled_img).astype(np.uint8)
+    image = Image.open(BytesIO(image_bytes))
+    original_array = np.array(image)
 
 
+    generated_img = stylize(image_bytes)
+    cv2.imwrite('lukaTestServ.jpg', generated_img)
+
+
+    # generated_img_arr = np.array(generated_img)
+
+    styled_test_img = Image.open("helloworld.jpg")
+    styled_test_img = styled_test_img.resize((original_array.shape[1], original_array.shape[0]))
+    styled_test_array = np.array(styled_test_img)
 
     mask_img = res[0].masks.data[0].numpy() * 255 # this works only for 1st detected object. to be modified later 
-    mask_img = cv2.resize(mask_img, (original_array.size[1], original_array.size[0]))
+    mask_img = cv2.resize(mask_img, (original_array.shape[1], original_array.shape[0]))
 
     res_array = np.copy(original_array)
 
     indices = np.where(mask_img > 0)
-    res_array[indices] = styled_array_resized_uint8[indices] # apply styled_img pixel to original image where an object is detected
+    res_array[indices]  = styled_test_array[indices]
 
-    res_img = Image.fromarray(res_array)
-    return res_img
+    return cv2.cvtColor(res_array, cv2.COLOR_BGR2RGB)
+
+# def create_mask(image_bytes, res):
+#     image = Image.open(BytesIO(image_bytes))
+#     original_array = np.array(image)
+
+#     styled_test_img = Image.open("helloworld.jpg")
+#     styled_test_img = styled_test_img.resize((original_array.shape[1], original_array.shape[0]))
+#     styled_test_array = np.array(styled_test_img)
+
+#     mask_img = res[0].masks.data[0].numpy() * 255 # this works only for 1st detected object. to be modified later 
+#     mask_img = cv2.resize(mask_img, (original_array.shape[1], original_array.shape[0]))
+
+#     res_array = np.copy(original_array)
+
+#     indices = np.where(mask_img > 0)
+#     res_array[indices]  = styled_test_array[indices]
+
+#     res_img = Image.fromarray(res_array)
+#     return res_img
