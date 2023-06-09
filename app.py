@@ -12,8 +12,8 @@ app = Flask(__name__, static_folder=STATIC_FOLDER)
 def process_image_controller():
     start_time = time.time()
 
-    image = request.files["image"]
-    processed_image_path = image_service.process_image(image)
+    image_file = request.files["image"]
+    processed_image_path = image_service.process_image(image_file)
 
     processed_image_url = url_for(
         STATIC_FOLDER, filename=processed_image_path, _external=True

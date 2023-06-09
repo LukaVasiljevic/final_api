@@ -39,7 +39,7 @@ def stylize(content_img_bytes):
         if (PRESERVE_COLOR):
             generated_image = utils.transfer_color(content_image, generated_image)
         print("Transfer Time: {}".format(time.time() - starttime))
-        # utils.show(generated_image)
+        
         cv2.imwrite('lukaTest.jpg', generated_image)
         utils.saveimg(generated_image, "helloworld.jpg")
         return np.copy(generated_image)
