@@ -2,25 +2,23 @@ from PIL import Image
 import os
 import uuid
 import numpy as np
-from ultralytics import YOLO
 from app import app
 import cv2
 from io import BytesIO
 from nst_implementation import stylize
 from werkzeug.utils import secure_filename
-from Style import StyleModel
-from TransferMode import Mode
+from enums.Style import StyleModel
+from enums.TransferMode import Mode
 
 # TODO points:
-# replace model with a custom one
+# add new models 
 # additional parameters
 #   for nst: (add if needed)
 #   for yolo: check documentation and see if we need something else
-# add a mode feature : apply nst either for class, inverse class or full style application
-# distinct methods for debugging and usage
 # reformat code and comment lines
-# exec time: ~1.3 s
 
+
+# !done add a mode feature : apply nst either for class, inverse class or full style application
 # !done think of enum for style_images
 # !done find a way to save unique filename not to have it overwritten (if processed images are not going to be just temp) uuid?
 
@@ -75,19 +73,7 @@ def create_mask(image_bytes, res, style_model_name, transfer_mode):
         res_array, generated_img, indices, transfer_mode
     )
 
-    # indices = np.where(mask_img > 0)
-    # res_array[indices] = generated_img[indices]
-
     return output_img_arr
-
-
-# # # HELPER FUNCTIONS
-def calculate_indices(mask_img, transfer_mode):
-    if transfer_mode is Mode.CLASS_MODE:
-        return np.where(mask_img > 0)
-    elif transfer_mode is Mode.INVERSE_MODE:
-        return np.where(mask_img <= 0)
-
 
 def mask_original_image(original_img_arr, generated_img_arr, indices, transfer_mode):
     if transfer_mode is Mode.FULL_STYLE_MODE:
@@ -96,6 +82,13 @@ def mask_original_image(original_img_arr, generated_img_arr, indices, transfer_m
         original_img_arr[indices] = generated_img_arr[indices]
         return original_img_arr
 
+# # # HELPER FUNCTIONS
+
+def calculate_indices(mask_img, transfer_mode):
+    if transfer_mode is Mode.CLASS_MODE:
+        return np.where(mask_img > 0)
+    elif transfer_mode is Mode.INVERSE_MODE:
+        return np.where(mask_img <= 0)
 
 def get_extension(image_file):
     filename = secure_filename(image_file.filename)

@@ -1,15 +1,11 @@
 import torch
 from fst import utils
 from fst import transformer
-import os
-from torchvision import transforms
 import time
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
-STYLE_TRANSFORM_PATH = "models/style/galatea_1.pth"
-STYLE_TRANSFORM_BASE_PATH = "models/style/"
+STYLE_TRANSFORM_PATH = "models/style/"
 PRESERVE_COLOR = False
 
 def stylize(content_img_bytes, style_model_name):
@@ -18,7 +14,7 @@ def stylize(content_img_bytes, style_model_name):
     device = ("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load Transformer Network
-    fst_model = STYLE_TRANSFORM_BASE_PATH + style_model_name
+    fst_model = STYLE_TRANSFORM_PATH + style_model_name
     net = transformer.TransformerNetwork()
     net.load_state_dict(torch.load(fst_model))
     net = net.to(device)

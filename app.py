@@ -4,7 +4,7 @@ import time
 import os
 from ultralytics import YOLO
 import json
-from TransferMode import Mode
+from enums.TransferMode import Mode
 
 
 STATIC_FOLDER = "static"
@@ -13,6 +13,7 @@ YOLO_MODEL_PATH = "models/seg/yolov8n-seg.pt"
 app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.yolo_model = YOLO(YOLO_MODEL_PATH)
 
+
 @app.route("/process-image", methods=["POST"])
 def process_image_controller():
     start_time = time.time()
@@ -20,23 +21,26 @@ def process_image_controller():
     image_file = request.files["image"]
     style_model_name, transfer_mode = parse_info(request.files["info"])
 
-    processed_image_path = image_service.process_image(image_file, style_model_name, transfer_mode)
+    processed_image_path = image_service.process_image(
+        image_file, style_model_name, transfer_mode
+    )
 
     processed_image_url = url_for(
         STATIC_FOLDER, filename=processed_image_path, _external=True
     )
 
     end_time = time.time()
-    execution_time = format(end_time - start_time, ".2f")
+
     return {
         "processed_image_path": processed_image_url,
-        "execution_time": execution_time,
+        "execution_time": format(end_time - start_time, ".2f"),
     }
 
 
 @app.route("/get-classes", methods=["GET"])
 def read_collection_classes_controller():
     return image_service.get_segmentation_classes()
+
 
 @app.route("/get-styles", methods=["GET"])
 def read_collection_styles_controller():

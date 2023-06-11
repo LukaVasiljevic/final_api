@@ -2,7 +2,7 @@
 
 how to use: 
 
-POST `/process-image` with `image` and `style` in request body and fetch results from the response link  
+POST `/process-image` with `image`, `style` and `mode` in request body and fetch results from the response link
 
 GET `/get-classes` with no parameters to get a list of detectable object classes
 
