@@ -8,17 +8,19 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-STYLE_TRANSFORM_PATH = "fst/transforms/galatea_1.pth"
+STYLE_TRANSFORM_PATH = "models/style/galatea_1.pth"
+STYLE_TRANSFORM_BASE_PATH = "models/style/"
 PRESERVE_COLOR = False
 
-def stylize(content_img_bytes):
+def stylize(content_img_bytes, style_model_name):
     file_bytes = np.frombuffer(content_img_bytes, np.uint8)
     content_image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
     device = ("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load Transformer Network
+    fst_model = STYLE_TRANSFORM_BASE_PATH + style_model_name
     net = transformer.TransformerNetwork()
-    net.load_state_dict(torch.load(STYLE_TRANSFORM_PATH))
+    net.load_state_dict(torch.load(fst_model))
     net = net.to(device)
 
     with torch.no_grad():

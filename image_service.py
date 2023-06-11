@@ -8,34 +8,39 @@ import cv2
 from io import BytesIO
 from nst_implementation import stylize
 from werkzeug.utils import secure_filename
+from Style import StyleModel
 
 # TODO points:
 # replace model with a custom one
 # additional parameters
 #   for nst: (add if needed)
 #   for yolo: check documentation and see if we need something else
-# custom obj class num/name
-# style picture (can be selected from the list for a start)
-# extract hyperparameters
+# add a mode feature : apply nst either for class, inverse class or full style application
 # distinct methods for debugging and usage
-# think of enum for style_images
 # reformat code and comment lines
 # exec time: ~1.3 s
 
-
+# !done think of enum for style_images
 # !done find a way to save unique filename not to have it overwritten (if processed images are not going to be just temp) uuid?
 
 PROCESSED_IMAGES_PATH = "processed_images/"
-YOLO_MODEL_PATH = "models/yolov8n-seg.pt"
 
 
-def process_image(image_file):
+def get_segmentation_classes():
+    return app.yolo_model.names
+
+
+def get_styles():
+    return StyleModel.read_collection()
+
+
+def process_image(image_file, style_model_name):
     img_bytes = image_file.read()
     res = predict_object(
         img_bytes
     )  # yolo obj detection. return type ultralytics.yolo.engine.results.Results
     res_img = create_mask(
-        img_bytes, res
+        img_bytes, res, style_model_name
     )  # apply nst and replace pixels of detected object with styled image
 
     processed_image_filename = str(uuid.uuid4()) + get_extension(image_file)
@@ -47,17 +52,16 @@ def process_image(image_file):
 
 def predict_object(img_bytes):
     img = Image.open(BytesIO(img_bytes))
-    yolo_model = YOLO(YOLO_MODEL_PATH)
-    res = yolo_model.predict(img)
+    res = app.yolo_model.predict(img)
     img.close()
     return res
 
 
-def create_mask(image_bytes, res):
+def create_mask(image_bytes, res, style_model_name):
     nparr = np.frombuffer(image_bytes, np.uint8)
     cv2_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    generated_img = stylize(image_bytes)
+    generated_img = stylize(image_bytes, style_model_name)
 
     mask_img = (
         res[0].masks.data[0].numpy() * 255
@@ -73,6 +77,7 @@ def create_mask(image_bytes, res):
 
 
 # # # HELPER FUNCTIONS
+
 
 def get_extension(image_file):
     filename = secure_filename(image_file.filename)
