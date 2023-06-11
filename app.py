@@ -4,6 +4,7 @@ import time
 import os
 from ultralytics import YOLO
 import json
+from TransferMode import Mode
 
 
 STATIC_FOLDER = "static"
@@ -17,9 +18,9 @@ def process_image_controller():
     start_time = time.time()
 
     image_file = request.files["image"]
-    style_model_name = parse_style(request.files["style"])
+    style_model_name, transfer_mode = parse_info(request.files["info"])
 
-    processed_image_path = image_service.process_image(image_file, style_model_name)
+    processed_image_path = image_service.process_image(image_file, style_model_name, transfer_mode)
 
     processed_image_url = url_for(
         STATIC_FOLDER, filename=processed_image_path, _external=True
@@ -42,11 +43,10 @@ def read_collection_styles_controller():
     return image_service.get_styles()
 
 
-def parse_style(style_file):
-    style_content = style_file.read()
-    style_data = json.loads(style_content)
-
-    return style_data.get("style")
+def parse_info(style_file):
+    info_content = style_file.read()
+    info_data = json.loads(info_content)
+    return info_data.get("style"), Mode(info_data.get("mode"))
 
 
 if __name__ == "__main__":

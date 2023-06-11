@@ -9,6 +9,7 @@ from io import BytesIO
 from nst_implementation import stylize
 from werkzeug.utils import secure_filename
 from Style import StyleModel
+from TransferMode import Mode
 
 # TODO points:
 # replace model with a custom one
@@ -34,13 +35,13 @@ def get_styles():
     return StyleModel.read_collection()
 
 
-def process_image(image_file, style_model_name):
+def process_image(image_file, style_model_name, transfer_mode):
     img_bytes = image_file.read()
     res = predict_object(
         img_bytes
     )  # yolo obj detection. return type ultralytics.yolo.engine.results.Results
     res_img = create_mask(
-        img_bytes, res, style_model_name
+        img_bytes, res, style_model_name, transfer_mode
     )  # apply nst and replace pixels of detected object with styled image
 
     processed_image_filename = str(uuid.uuid4()) + get_extension(image_file)
@@ -57,7 +58,7 @@ def predict_object(img_bytes):
     return res
 
 
-def create_mask(image_bytes, res, style_model_name):
+def create_mask(image_bytes, res, style_model_name, transfer_mode):
     nparr = np.frombuffer(image_bytes, np.uint8)
     cv2_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
@@ -69,14 +70,31 @@ def create_mask(image_bytes, res, style_model_name):
     mask_img = cv2.resize(mask_img, (cv2_img.shape[1], cv2_img.shape[0]))
 
     res_array = np.copy(cv2_img)
+    indices = calculate_indices(mask_img, transfer_mode)
+    output_img_arr = mask_original_image(
+        res_array, generated_img, indices, transfer_mode
+    )
 
-    indices = np.where(mask_img > 0)
-    res_array[indices] = generated_img[indices]
+    # indices = np.where(mask_img > 0)
+    # res_array[indices] = generated_img[indices]
 
-    return res_array
+    return output_img_arr
 
 
 # # # HELPER FUNCTIONS
+def calculate_indices(mask_img, transfer_mode):
+    if transfer_mode is Mode.CLASS_MODE:
+        return np.where(mask_img > 0)
+    elif transfer_mode is Mode.INVERSE_MODE:
+        return np.where(mask_img <= 0)
+
+
+def mask_original_image(original_img_arr, generated_img_arr, indices, transfer_mode):
+    if transfer_mode is Mode.FULL_STYLE_MODE:
+        return generated_img_arr
+    else:
+        original_img_arr[indices] = generated_img_arr[indices]
+        return original_img_arr
 
 
 def get_extension(image_file):

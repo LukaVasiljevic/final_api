@@ -10,9 +10,10 @@ files = [
 ]
 
 # Prepare the style file
-style = {'style': 'starry.pth'}
+style = {'style': 'starry.pth',
+         'mode' : 1}
 style_content = json.dumps(style)
-style_file = ('style', ('style.json', style_content, 'application/json'))
+style_file = ('info', ('style.json', style_content, 'application/json'))
 
 # Add the style file to the files list
 files.append(style_file)
