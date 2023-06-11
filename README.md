@@ -124,6 +124,10 @@ to be done..
 To use the API, make requests to the provided endpoints using the appropriate HTTP methods.
 
 Example usage with cURL:
+to be done.. 
+
+## Attribution
+add the attribution 
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
