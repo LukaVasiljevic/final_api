@@ -1,4 +1,5 @@
-from flask import Flask, request, url_for, g
+from flask import Flask, request, url_for
+from flask_cors import CORS
 import image_service
 import time
 import os
@@ -12,7 +13,7 @@ YOLO_MODEL_PATH = "models/seg/yolov8n-seg.pt"
 
 app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.yolo_model = YOLO(YOLO_MODEL_PATH)
-
+CORS(app)
 
 @app.route("/process-image", methods=["POST"])
 def process_image_controller():
