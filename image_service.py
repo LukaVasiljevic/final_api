@@ -11,7 +11,7 @@ from enums.Style import StyleModel
 from enums.TransferMode import Mode
 
 # TODO points:
-# add new models 
+# add new models
 # additional parameters
 #   for nst: (add if needed)
 #   for yolo: check documentation and see if we need something else
@@ -23,14 +23,15 @@ from enums.TransferMode import Mode
 # !done find a way to save unique filename not to have it overwritten (if processed images are not going to be just temp) uuid?
 
 PROCESSED_IMAGES_PATH = "processed_images/"
+STYLE_IMAGES_PATH = "/style_images/"
 
 
 def get_segmentation_classes():
     return app.yolo_model.names
 
 
-def get_styles():
-    return StyleModel.read_collection()
+def get_styles(request):
+    return StyleModel.read_collection(request)
 
 
 def process_image(image_file, style_model_name, transfer_mode):
@@ -75,6 +76,7 @@ def create_mask(image_bytes, res, style_model_name, transfer_mode):
 
     return output_img_arr
 
+
 def mask_original_image(original_img_arr, generated_img_arr, indices, transfer_mode):
     if transfer_mode is Mode.FULL_STYLE_MODE:
         return generated_img_arr
@@ -82,13 +84,16 @@ def mask_original_image(original_img_arr, generated_img_arr, indices, transfer_m
         original_img_arr[indices] = generated_img_arr[indices]
         return original_img_arr
 
+
 # # # HELPER FUNCTIONS
+
 
 def calculate_indices(mask_img, transfer_mode):
     if transfer_mode is Mode.CLASS_MODE:
         return np.where(mask_img > 0)
     elif transfer_mode is Mode.INVERSE_MODE:
         return np.where(mask_img <= 0)
+
 
 def get_extension(image_file):
     filename = secure_filename(image_file.filename)

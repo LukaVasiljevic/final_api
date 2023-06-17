@@ -13,7 +13,10 @@ YOLO_MODEL_PATH = "models/seg/yolov8n-seg.pt"
 
 app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.yolo_model = YOLO(YOLO_MODEL_PATH)
+app.static_folder = STATIC_FOLDER
+
 CORS(app)
+
 
 @app.route("/process-image", methods=["POST"])
 def process_image_controller():
@@ -45,7 +48,7 @@ def read_collection_classes_controller():
 
 @app.route("/get-styles", methods=["GET"])
 def read_collection_styles_controller():
-    return image_service.get_styles()
+    return image_service.get_styles(request)
 
 
 def parse_info(style_file):

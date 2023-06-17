@@ -10,8 +10,8 @@ files = [
 ]
 
 # Prepare the style file
-style = {'style': 'starry.pth',
-         'mode' : 1}
+style = {'style': 'udnie.pth',
+         'mode' : 2}
 style_content = json.dumps(style)
 style_file = ('info', ('style.json', style_content, 'application/json'))
 
